@@ -74,7 +74,7 @@ func fetchValues(ctx context.Context, t *target.Target, pathStr string) ([]strin
 
 	req := &gnmi.GetRequest{
 		Path:     []*gnmi.Path{gnmiPath},
-		Type:     gnmi.GetRequest_CONFIG,
+		Type:     gnmi.GetRequest_ALL,
 		Encoding: gnmi.Encoding_JSON,
 	}
 
