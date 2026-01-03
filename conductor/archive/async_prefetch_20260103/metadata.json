@@ -1,0 +1,8 @@
+{
+    "track_id": "async_prefetch_20260103",
+    "type": "feature",
+    "status": "new",
+    "created_at": "2026-01-03T00:00:00Z",
+    "updated_at": "2026-01-03T00:00:00Z",
+    "description": "gnmic Promptモード: 非同期プリフェッチ機能の実装"
+}
