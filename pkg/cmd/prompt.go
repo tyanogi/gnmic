@@ -788,11 +788,14 @@ func showCommandArguments(b *goprompt.Buffer) {
 func ExecutePrompt() {
 	initPromptCmds()
 
+	fmt.Fprintf(os.Stderr, "[debug] ExecutePrompt: initializing targets\n")
 	// Initialize Targets
 	targetsConfig, err := gApp.GetTargets()
 	if err != nil {
 		gApp.Logger.Printf("failed to get targets: %v", err)
+		fmt.Fprintf(os.Stderr, "[debug] ExecutePrompt: failed to get targets: %v\n", err)
 	} else {
+		fmt.Fprintf(os.Stderr, "[debug] ExecutePrompt: found %d targets in config\n", len(targetsConfig))
 		for _, tc := range targetsConfig {
 			gApp.AddTargetConfig(tc)
 			t := target.NewTarget(tc)
@@ -800,11 +803,15 @@ func ExecutePrompt() {
 		}
 	}
 
+	fmt.Fprintf(os.Stderr, "[debug] ExecutePrompt: gApp.Targets has %d entries\n", len(gApp.Targets))
+
 	// Start async prefetch for all configured targets
 	for _, t := range gApp.Targets {
+		fmt.Fprintf(os.Stderr, "[debug] ExecutePrompt: starting prefetch for %s\n", t.Config.Name)
 		err := gApp.CreateGNMIClient(gApp.Context(), t)
 		if err != nil {
 			gApp.Logger.Printf("failed to create client for target %s: %v", t.Config.Name, err)
+			fmt.Fprintf(os.Stderr, "[debug] ExecutePrompt: failed to create client for %s: %v\n", t.Config.Name, err)
 			continue
 		}
 		go app.StartOpenConfigPrefetch(gApp.Context(), t, gApp.PromptVariableStore, gApp.Logger)
