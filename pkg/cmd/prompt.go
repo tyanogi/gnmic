@@ -546,6 +546,11 @@ var dirPathCompleter = completer.FilePathCompleter{
 func findDynamicSuggestions(annotation string, doc goprompt.Document) []goprompt.Suggest {
 	switch annotation {
 	case "XPATH":
+		if valueSuggs := checkValueSuggestions(doc.CurrentLineBeforeCursor()); len(valueSuggs) > 0 {
+			word := doc.GetWordBeforeCursor()
+			cleanWord := strings.TrimLeft(word, "'\"")
+			return goprompt.FilterHasPrefix(valueSuggs, cleanWord, true)
+		}
 		line := doc.CurrentLine()
 		word := doc.GetWordBeforeCursor()
 		suggestions := make([]goprompt.Suggest, 0, 16)
