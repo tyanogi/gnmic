@@ -24,7 +24,7 @@ This plan outlines the steps to implement the asynchronous prefetch feature for 
     - Modify `pkg/app/app.go` (or relevant struct) to initialize and hold the `VariableStore` instance.
     - Update `Init` or constructor methods to ensure the store is ready before the prompt starts.
 
-- [ ] Task: Hook Prefetcher into Prompt Startup
+- [x] Task: Hook Prefetcher into Prompt Startup bc9351b
     - Modify `pkg/app/prompt.go` (specifically `runPrompt` or equivalent).
     - Insert the call to `StartOpenConfigPrefetch` immediately after the target connection is established.
     - Ensure it runs in a separate goroutine (`go app.StartOpenConfigPrefetch(...)`).
