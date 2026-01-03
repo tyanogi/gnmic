@@ -369,8 +369,6 @@ func findMatchedXPATH(entry *yang.Entry, input string, prefixPresent bool) []gop
 			node := ""
 			if inputLen == 0 && prependOrigin {
 				node = fmt.Sprintf("%s:/%s", entry.Name, name)
-			} else if inputLen > 0 && input[0] == '/' {
-				node = name
 			} else {
 				node = pathelem
 			}
