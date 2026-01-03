@@ -26,7 +26,7 @@ func checkValueSuggestions(line string) []goprompt.Suggest {
 	}
 	lastArg := args[len(args)-1]
 
-	// Heuristic: Check if the last occurrence of "[name=" comes after the last "]"
+	// Find the start of the name assignment
 	idx := strings.LastIndex(lastArg, "[name=")
 	if idx == -1 {
 		return nil
@@ -38,23 +38,24 @@ func checkValueSuggestions(line string) []goprompt.Suggest {
 		return nil
 	}
 
-	prefix := lastArg[:idx]
+	fullPrefix := lastArg[:idx+len("[name=")]
+	prefixPath := lastArg[:idx]
 	// Remove trailing slash if present for suffix check
-	prefix = strings.TrimSuffix(prefix, "/")
+	prefixPath = strings.TrimSuffix(prefixPath, "/")
 
-	// fmt.Fprintf(os.Stderr, "[debug] checkValueSuggestions prefix: '%s'\n", prefix)
+	// fmt.Fprintf(os.Stderr, "[debug] checkValueSuggestions fullPrefix: '%s' prefixPath: '%s'\n", fullPrefix, prefixPath)
 
-	if strings.HasSuffix(prefix, "interfaces/interface") {
-		return getStoreSuggestions("interface")
+	if strings.HasSuffix(prefixPath, "interfaces/interface") {
+		return getStoreSuggestions("interface", fullPrefix)
 	}
-	if strings.HasSuffix(prefix, "network-instances/network-instance") {
-		return getStoreSuggestions("netinst")
+	if strings.HasSuffix(prefixPath, "network-instances/network-instance") {
+		return getStoreSuggestions("netinst", fullPrefix)
 	}
 
 	return nil
 }
 
-func getStoreSuggestions(category string) []goprompt.Suggest {
+func getStoreSuggestions(category string, fullPrefix string) []goprompt.Suggest {
 	if gApp.PromptVariableStore == nil {
 		return nil
 	}
@@ -65,7 +66,7 @@ func getStoreSuggestions(category string) []goprompt.Suggest {
 	suggs := make([]goprompt.Suggest, len(values))
 	for i, v := range values {
 		suggs[i] = goprompt.Suggest{
-			Text:        v,
+			Text:        fullPrefix + v + "]",
 			Description: fmt.Sprintf("Discovered %s", category),
 		}
 	}
