@@ -73,7 +73,7 @@ func fetchValues(ctx context.Context, t *target.Target, pathStr string) ([]strin
 		Encoding: gnmi.Encoding_JSON,
 	}
 
-	resp, err := t.Client.Get(ctx, req)
+	resp, err := t.Get(ctx, req)
 	if err != nil {
 		return nil, err
 	}
