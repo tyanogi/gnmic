@@ -37,12 +37,18 @@ func StartOpenConfigPrefetch(ctx context.Context, t *target.Target, store *Varia
 		wg.Add(1)
 		go func(cat, pStr string) {
 			defer wg.Done()
+			if logger != nil {
+				logger.Printf("debug: starting prefetch for %s path: %s", cat, pStr)
+			}
 			values, err := fetchValues(ctx, t, pStr)
 			if err != nil {
 				if logger != nil {
 					logger.Printf("failed to prefetch %s: %v", cat, err)
 				}
 				return
+			}
+			if logger != nil {
+				logger.Printf("debug: prefetched %d values for %s", len(values), cat)
 			}
 			if len(values) > 0 {
 				store.Set(cat, values)
