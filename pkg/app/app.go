@@ -91,8 +91,9 @@ type App struct {
 	Logger *log.Logger
 	out    io.Writer
 	// prompt mode
-	PromptMode    bool
-	PromptHistory []string
+	PromptMode          bool
+	PromptVariableStore *VariableStore
+	PromptHistory       []string
 	SchemaTree    *yang.Entry
 	// yang
 	modules *yang.Modules
@@ -140,9 +141,10 @@ func New() *App {
 		apiServices:  make(map[string]*lockers.Service),
 		dispatchLock: new(sync.Mutex),
 
-		Logger:        log.New(io.Discard, "[gnmic] ", log.LstdFlags|log.Lmsgprefix),
-		out:           os.Stdout,
-		PromptHistory: make([]string, 0, 128),
+		Logger:              log.New(io.Discard, "[gnmic] ", log.LstdFlags|log.Lmsgprefix),
+		out:                 os.Stdout,
+		PromptVariableStore: NewVariableStore(),
+		PromptHistory:       make([]string, 0, 128),
 		SchemaTree: &yang.Entry{
 			Dir: make(map[string]*yang.Entry),
 		},
