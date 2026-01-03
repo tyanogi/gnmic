@@ -29,7 +29,7 @@ This plan outlines the steps to implement the asynchronous prefetch feature for 
     - Insert the call to `StartOpenConfigPrefetch` immediately after the target connection is established.
     - Ensure it runs in a separate goroutine (`go app.StartOpenConfigPrefetch(...)`).
 
-- [ ] Task: Implement Completer Logic with Store Lookup
+- [x] Task: Implement Completer Logic with Store Lookup 982d672
     - Modify `completer` function in `pkg/app/prompt.go`.
     - Add logic to detect cursor context (e.g., regex match for `interface[name=` or `network-instance[name=`).
     - If a match is found, query the `VariableStore` for the corresponding category.
