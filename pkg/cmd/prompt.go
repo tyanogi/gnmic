@@ -787,8 +787,23 @@ func showCommandArguments(b *goprompt.Buffer) {
 func ExecutePrompt() {
 	initPromptCmds()
 
+	// Initialize Targets
+	targetsConfig, err := gApp.GetTargets()
+	if err != nil {
+		gApp.Logger.Printf("failed to get targets: %v", err)
+	} else {
+		for _, tc := range targetsConfig {
+			gApp.AddTargetConfig(tc)
+		}
+	}
+
 	// Start async prefetch for all configured targets
 	for _, t := range gApp.Targets {
+		err := gApp.CreateGNMIClient(gApp.Context(), t)
+		if err != nil {
+			gApp.Logger.Printf("failed to create client for target %s: %v", t.Config.Name, err)
+			continue
+		}
 		go app.StartOpenConfigPrefetch(gApp.Context(), t, gApp.PromptVariableStore, gApp.Logger)
 	}
 
