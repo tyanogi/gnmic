@@ -10,7 +10,7 @@ This plan outlines the steps to implement the asynchronous prefetch feature for 
     - Implement methods: `Set(category string, values []string)` and `Get(category string) []string`.
     - **Verification**: Write unit tests in `pkg/app/variables_test.go` to ensure concurrent read/write safety.
 
-- [ ] Task: Implement Async Prefetcher Logic
+- [x] Task: Implement Async Prefetcher Logic f90059e
     - Create `pkg/app/prefetch_oc.go`.
     - Implement `StartOpenConfigPrefetch(ctx context.Context, t *Target, store *VariableStore)`.
     - Implement helper function `extractLeafValues(resp *gnmi.GetResponse) []string`.
