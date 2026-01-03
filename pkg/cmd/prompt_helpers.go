@@ -9,7 +9,7 @@
 package cmd
 
 import (
-	"os"
+	"fmt"
 	"strings"
 
 	goprompt "github.com/c-bata/go-prompt"
