@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
+	"github.com/openconfig/gnmic/pkg/api/target"
 	"github.com/openconfig/gnmic/pkg/api/types"
 	"github.com/openconfig/gnmic/pkg/app"
 	"github.com/openconfig/gnmic/pkg/cmd/get"
@@ -794,11 +795,15 @@ func ExecutePrompt() {
 		gApp.Logger.Printf("failed to get targets: %v", err)
 		fmt.Fprintf(os.Stderr, "[debug] ExecutePrompt: failed to get targets: %v\n", err)
 	} else {
-		fmt.Fprintf(os.Stderr, "[debug] ExecutePrompt: found %d targets\n", len(targetsConfig))
+		fmt.Fprintf(os.Stderr, "[debug] ExecutePrompt: found %d targets in config\n", len(targetsConfig))
 		for _, tc := range targetsConfig {
 			gApp.AddTargetConfig(tc)
+			t := target.NewTarget(tc)
+			gApp.Targets[tc.Name] = t
 		}
 	}
+
+	fmt.Fprintf(os.Stderr, "[debug] ExecutePrompt: gApp.Targets has %d entries\n", len(gApp.Targets))
 
 	// Start async prefetch for all configured targets
 	for _, t := range gApp.Targets {
