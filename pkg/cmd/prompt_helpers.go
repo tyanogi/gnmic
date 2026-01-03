@@ -38,6 +38,7 @@ func checkValueSuggestions(line string) []goprompt.Suggest {
 		return nil
 	}
 
+	fullPrefix := lastArg[:idx+len("[name=")]
 	prefixPath := lastArg[:idx]
 	// Remove trailing slash if present for suffix check
 	prefixPath = strings.TrimSuffix(prefixPath, "/")
@@ -45,16 +46,16 @@ func checkValueSuggestions(line string) []goprompt.Suggest {
 	// fmt.Fprintf(os.Stderr, "[debug] checkValueSuggestions fullPrefix: '%s' prefixPath: '%s'\n", fullPrefix, prefixPath)
 
 	if strings.HasSuffix(prefixPath, "interfaces/interface") {
-		return getStoreSuggestions("interface")
+		return getStoreSuggestions("interface", fullPrefix)
 	}
 	if strings.HasSuffix(prefixPath, "network-instances/network-instance") {
-		return getStoreSuggestions("netinst")
+		return getStoreSuggestions("netinst", fullPrefix)
 	}
 
 	return nil
 }
 
-func getStoreSuggestions(category string) []goprompt.Suggest {
+func getStoreSuggestions(category string, fullPrefix string) []goprompt.Suggest {
 	if gApp.PromptVariableStore == nil {
 		return nil
 	}
@@ -65,7 +66,7 @@ func getStoreSuggestions(category string) []goprompt.Suggest {
 	suggs := make([]goprompt.Suggest, len(values))
 	for i, v := range values {
 		suggs[i] = goprompt.Suggest{
-			Text:        v + "]",
+			Text:        fullPrefix + v + "]",
 			Description: fmt.Sprintf("Discovered %s", category),
 		}
 	}
