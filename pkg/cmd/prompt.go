@@ -882,7 +882,7 @@ func ExecutePrompt() {
 					},
 				},
 			),
-			goprompt.OptionCompletionWordSeparator(completer.FilePathCompletionSeparator),
+			goprompt.OptionCompletionWordSeparator(" "),
 			// goprompt.OptionCompletionOnDown(),
 			goprompt.OptionShowCompletionAtStart(),
 		},
