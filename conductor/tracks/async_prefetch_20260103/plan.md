@@ -20,7 +20,7 @@ This plan outlines the steps to implement the asynchronous prefetch feature for 
 
 ## Phase 2: Application Integration & UI Hook
 
-- [ ] Task: Integrate VariableStore into App Context
+- [x] Task: Integrate VariableStore into App Context b8f72be
     - Modify `pkg/app/app.go` (or relevant struct) to initialize and hold the `VariableStore` instance.
     - Update `Init` or constructor methods to ensure the store is ready before the prompt starts.
 
