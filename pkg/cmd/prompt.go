@@ -1004,7 +1004,7 @@ func findSuggestions(co cmdPrompt, doc goprompt.Document) []goprompt.Suggest {
 	suggestions := make([]goprompt.Suggest, 0, 32)
 
 	// Debug logging
-	// fmt.Fprintf(os.Stderr, "[debug] findSuggestions: wordBeforeCursor='%s' currentLine='%s'\n", doc.GetWordBeforeCursor(), doc.CurrentLine())
+	fmt.Fprintf(os.Stderr, "[debug] findSuggestions: wordBeforeCursor='%s' currentLine='%s'\n", doc.GetWordBeforeCursor(), doc.CurrentLine())
 
 	// check flag annotation for the dynamic suggestion
 	annotation := ""
