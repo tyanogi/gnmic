@@ -9,26 +9,40 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 	"strings"
 
 	goprompt "github.com/c-bata/go-prompt"
 )
 
 func checkValueSuggestions(line string) []goprompt.Suggest {
+	// Debug logging
+	// fmt.Fprintf(os.Stderr, "[debug] checkValueSuggestions line: '%s'\n", line)
+
+	// split line by space to get the last argument which is likely the path
+	args := strings.Fields(line)
+	if len(args) == 0 {
+		return nil
+	}
+	lastArg := args[len(args)-1]
+
 	// Heuristic: Check if the last occurrence of "[name=" comes after the last "]"
-	idx := strings.LastIndex(line, "[name=")
+	idx := strings.LastIndex(lastArg, "[name=")
 	if idx == -1 {
 		return nil
 	}
 
 	// Check if closed
-	closingBracket := strings.Index(line[idx:], "]")
+	closingBracket := strings.Index(lastArg[idx:], "]")
 	if closingBracket != -1 {
 		return nil
 	}
 
-	prefix := line[:idx]
+	prefix := lastArg[:idx]
+	// Remove trailing slash if present for suffix check
+	prefix = strings.TrimSuffix(prefix, "/")
+
+	// fmt.Fprintf(os.Stderr, "[debug] checkValueSuggestions prefix: '%s'\n", prefix)
 
 	if strings.HasSuffix(prefix, "interfaces/interface") {
 		return getStoreSuggestions("interface")
