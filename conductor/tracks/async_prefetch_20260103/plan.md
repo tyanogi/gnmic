@@ -34,7 +34,7 @@ This plan outlines the steps to implement the asynchronous prefetch feature for 
     - Add logic to detect cursor context (e.g., regex match for `interface[name=` or `network-instance[name=`).
     - If a match is found, query the `VariableStore` for the corresponding category.
     - Convert retrieved values into `prompt.Suggest` items and return them.
-    - **Verification**: Manual test using the `gnmic prompt` mode against a mock gNMI server or a lab device to verify suggestions appear.
+    - **Verification**: Manual test using the `gnmic prompt` mode against a local mock server (started with `--yang-path ./references/public`) to verify suggestions appear alongside schema-based completions.
 
 ## Phase 3: Final Verification and Cleanup
 
