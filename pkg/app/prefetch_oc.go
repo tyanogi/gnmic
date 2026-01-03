@@ -21,8 +21,8 @@ import (
 )
 
 const (
-	ocInterfaceNamePath = "/interfaces/interface/config/name"
-	ocNetInstNamePath   = "/network-instances/network-instance/config/name"
+	ocInterfaceNamePath = "/interfaces/interface[name=*]/config/name"
+	ocNetInstNamePath   = "/network-instances/network-instance[name=*]/config/name"
 )
 
 var prefetchTargets = map[string]string{
