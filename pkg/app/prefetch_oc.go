@@ -51,6 +51,9 @@ func StartOpenConfigPrefetch(ctx context.Context, t *target.Target, store *Varia
 }
 
 func fetchValues(ctx context.Context, t *target.Target, pathStr string) ([]string, error) {
+	if t.Client == nil {
+		return nil, fmt.Errorf("gNMI client not initialized")
+	}
 	gnmiPath, err := path.ParsePath(pathStr)
 	if err != nil {
 		return nil, err

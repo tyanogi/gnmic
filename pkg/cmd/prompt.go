@@ -26,6 +26,7 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/openconfig/gnmic/pkg/api/types"
+	"github.com/openconfig/gnmic/pkg/app"
 	"github.com/openconfig/gnmic/pkg/cmd/get"
 	"github.com/openconfig/gnmic/pkg/cmd/subscribe"
 )
@@ -780,6 +781,12 @@ func showCommandArguments(b *goprompt.Buffer) {
 // ExecutePrompt load and run gnmic-prompt mode.
 func ExecutePrompt() {
 	initPromptCmds()
+
+	// Start async prefetch for all configured targets
+	for _, t := range gApp.Targets {
+		go app.StartOpenConfigPrefetch(gApp.Context(), t, gApp.PromptVariableStore)
+	}
+
 	shell := &cmdPrompt{
 		RootCmd: gApp.RootCmd,
 		GoPromptOptions: []goprompt.Option{
