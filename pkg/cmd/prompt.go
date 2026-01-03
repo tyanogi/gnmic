@@ -407,14 +407,17 @@ func findMatchedXPATH(entry *yang.Entry, input string, prefixPresent bool) []gop
 			}
 			if bracketCount == 0 {
 				var childSuggestions []goprompt.Suggest
+				var prefix string
 				if endIndex >= 0 {
 					childSuggestions = findMatchedXPATH(child, input[endIndex:], prefixPresent)
+					prefix = input[:endIndex]
 				} else {
 					childSuggestions = findMatchedXPATH(child, input[len(pathelem):], prefixPresent)
+					prefix = pathelem
 				}
-				// Prepend the current path element to all child suggestions
+				// Prepend the current path prefix to all child suggestions
 				for i := range childSuggestions {
-					childSuggestions[i].Text = pathelem + childSuggestions[i].Text
+					childSuggestions[i].Text = prefix + childSuggestions[i].Text
 				}
 				suggestions = append(suggestions, childSuggestions...)
 			}
