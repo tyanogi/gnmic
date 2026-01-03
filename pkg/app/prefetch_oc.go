@@ -11,6 +11,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"log"
 	"sync"
 
 	"github.com/openconfig/gnmi/proto/gnmi"
@@ -29,7 +30,7 @@ var prefetchTargets = map[string]string{
 }
 
 // StartOpenConfigPrefetch starts the async prefetch of OpenConfig resources
-func StartOpenConfigPrefetch(ctx context.Context, t *target.Target, store *VariableStore) {
+func StartOpenConfigPrefetch(ctx context.Context, t *target.Target, store *VariableStore, logger *log.Logger) {
 	var wg sync.WaitGroup
 
 	for category, pathStr := range prefetchTargets {
@@ -38,8 +39,9 @@ func StartOpenConfigPrefetch(ctx context.Context, t *target.Target, store *Varia
 			defer wg.Done()
 			values, err := fetchValues(ctx, t, pStr)
 			if err != nil {
-				// Log debug only, do not fail
-				// log.Printf("debug: failed to prefetch %s: %v", cat, err)
+				if logger != nil {
+					logger.Printf("failed to prefetch %s: %v", cat, err)
+				}
 				return
 			}
 			if len(values) > 0 {

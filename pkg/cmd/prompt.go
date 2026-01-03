@@ -789,7 +789,7 @@ func ExecutePrompt() {
 
 	// Start async prefetch for all configured targets
 	for _, t := range gApp.Targets {
-		go app.StartOpenConfigPrefetch(gApp.Context(), t, gApp.PromptVariableStore)
+		go app.StartOpenConfigPrefetch(gApp.Context(), t, gApp.PromptVariableStore, gApp.Logger)
 	}
 
 	shell := &cmdPrompt{

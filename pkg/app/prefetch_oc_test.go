@@ -104,7 +104,7 @@ func TestStartOpenConfigPrefetch(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	StartOpenConfigPrefetch(ctx, tg, store)
+	StartOpenConfigPrefetch(ctx, tg, store, nil)
 
 	// Verify interfaces
 	interfaces := store.Get("interface")
@@ -139,7 +139,7 @@ func TestStartOpenConfigPrefetch(t *testing.T) {
 		return nil, fmt.Errorf("error")
 	}
 
-	StartOpenConfigPrefetch(ctx, tg, store)
+	StartOpenConfigPrefetch(ctx, tg, store, nil)
 	interfaces = store.Get("interface")
 	// Should be overwritten or merged? Current impl overwrites using Set.
 	// Since goroutines run concurrently, order isn't guaranteed between different StartOpenConfigPrefetch calls
@@ -163,7 +163,7 @@ func TestStartOpenConfigPrefetchError(t *testing.T) {
 	}
 
 	// Should not panic and should handle error gracefully
-	StartOpenConfigPrefetch(context.Background(), tg, store)
+	StartOpenConfigPrefetch(context.Background(), tg, store, nil)
 
 	if store.Get("interface") != nil {
 		t.Error("Expected nil store for interface on error")
