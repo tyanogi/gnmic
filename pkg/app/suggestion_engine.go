@@ -40,7 +40,15 @@ func NewSuggestionEngine(t *target.Target, c SuggestionCache) SuggestionEngine {
 
 // Start begins the asynchronous prefetching process for the given lists.
 func (s *suggestionEngineImpl) Start(ctx context.Context, lists []ListInfo) {
-	// TODO: Implement async execution in Phase 3
+	for _, list := range lists {
+		go func(li ListInfo) {
+			err := s.prefetchList(ctx, li)
+			if err != nil {
+				// We log errors but don't stop the engine as per requirements
+				fmt.Printf("Suggestion engine error for path %s: %v\n", li.Path, err)
+			}
+		}(list)
+	}
 }
 
 // prefetchList sends a gNMI Get request for a single list and updates the cache.
