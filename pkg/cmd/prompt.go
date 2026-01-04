@@ -343,7 +343,7 @@ func subscriptionTable(scs map[string]*types.SubscriptionConfig, list bool) [][]
 var name string
 
 func debugLog(format string, a ...interface{}) {
-	f, err := os.OpenFile("/tmp/gnmic_prompt_debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile("gnmic_prompt_debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return
 	}
