@@ -375,10 +375,28 @@ func findMatchedXPATH(entry *yang.Entry, input string, prefixPresent bool) []gop
 			suggestions = append(suggestions, goprompt.Suggest{Text: node, Description: buildXPATHDescription(child)})
 			if child.Key != "" { // list
 				keylist := strings.Split(child.Key, " ")
-				for _, key := range keylist {
-					node = fmt.Sprintf("%s[%s=*]", node, key)
+				path := app.GetPath(child)
+				// Only expand suggestions for single-key lists
+				if len(keylist) == 1 {
+					key := keylist[0]
+					cacheKey := fmt.Sprintf("%s::%s", path, key)
+					cachedValues := gApp.SuggestionCache.Get(cacheKey)
+
+					if len(cachedValues) > 0 {
+						for _, val := range cachedValues {
+							nodeVal := fmt.Sprintf("%s[%s=%s]", node, key, val)
+							suggestions = append(suggestions, goprompt.Suggest{Text: nodeVal, Description: buildXPATHDescription(child)})
+						}
+					} else {
+						node = fmt.Sprintf("%s[%s=*]", node, key)
+						suggestions = append(suggestions, goprompt.Suggest{Text: node, Description: buildXPATHDescription(child)})
+					}
+				} else {
+					for _, key := range keylist {
+						node = fmt.Sprintf("%s[%s=*]", node, key)
+					}
+					suggestions = append(suggestions, goprompt.Suggest{Text: node, Description: buildXPATHDescription(child)})
 				}
-				suggestions = append(suggestions, goprompt.Suggest{Text: node, Description: buildXPATHDescription(child)})
 			}
 		} else if strings.HasPrefix(input, pathelem) {
 			var prevC rune
