@@ -438,6 +438,33 @@ func findMatchedXPATH(entry *yang.Entry, input string, prefixPresent bool) []gop
 					childSuggestions[i].Text = prefix + childSuggestions[i].Text
 				}
 				suggestions = append(suggestions, childSuggestions...)
+			} else {
+				if child.Key != "" { // list
+					keylist := strings.Split(child.Key, " ")
+					path := app.GetPath(child)
+					// Only expand suggestions for single-key lists
+					if len(keylist) == 1 {
+						key := keylist[0]
+						cacheKey := fmt.Sprintf("%s::%s", path, key)
+						cachedValues := gApp.SuggestionCache.Get(cacheKey)
+
+						if len(cachedValues) > 0 {
+							for _, val := range cachedValues {
+								nodeVal := fmt.Sprintf("%s[%s=%s]", pathelem, key, val)
+								suggestions = append(suggestions, goprompt.Suggest{Text: nodeVal, Description: buildXPATHDescription(child)})
+							}
+						} else {
+							nodeVal := fmt.Sprintf("%s[%s=*]", pathelem, key)
+							suggestions = append(suggestions, goprompt.Suggest{Text: nodeVal, Description: buildXPATHDescription(child)})
+						}
+					} else {
+						nodeVal := pathelem
+						for _, key := range keylist {
+							nodeVal = fmt.Sprintf("%s[%s=*]", nodeVal, key)
+						}
+						suggestions = append(suggestions, goprompt.Suggest{Text: nodeVal, Description: buildXPATHDescription(child)})
+					}
+				}
 			}
 		}
 	}
