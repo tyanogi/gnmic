@@ -23,5 +23,5 @@
 
 ## Phase 4: コードクオリティとドキュメント
 - [x] Lint/Type Check: `golangci-lint` を実行し、コードの整合性を確認する a8d7050
-- [ ] ドキュメント: 実装した構造体やメソッドにGoDocコメントを追記する
+- [x] ドキュメント: 実装した構造体やメソッドにGoDocコメントを追記する b22befb
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: コードクオリティとドキュメント' (Protocol in workflow.md)
