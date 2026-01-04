@@ -15,19 +15,22 @@ import (
 	"github.com/openconfig/goyang/pkg/yang"
 )
 
-// ListInfo represents the information extracted from a YANG list node
-// necessary for dynamic prompt completion.
+// ListInfo represents the information extracted from a YANG list node.
+// This information is used for dynamic prompt completion to identify
+// which paths should be queried to obtain possible values for list keys.
 type ListInfo struct {
-	// Path is the absolute path to the list node (e.g., "/interfaces/interface").
+	// Path is the absolute gNMI path to the list node (e.g., "/interfaces/interface").
 	Path string
-	// Key is the name of the list key (e.g., "name").
+	// Key is the name of the list key leaf (e.g., "name").
 	Key string
-	// StatePath is the path used to query the state from the device (e.g., "/interfaces/interface/state/name").
+	// StatePath is the gNMI path used to query the state from the device (e.g., "/interfaces/interface/state/name").
+	// It defaults to Path/Key but uses the OpenConfig 'state' container heuristic if applicable.
 	StatePath string
 }
 
 // Walk traverses the YANG schema tree starting from the given entry
-// and extracts information about all list nodes.
+// and extracts information about all list nodes encountered during the traversal.
+// It returns a slice of ListInfo, one for each key of each list node found.
 func Walk(entry *yang.Entry) ([]ListInfo, error) {
 	infos := []ListInfo{}
 
@@ -73,6 +76,8 @@ func Walk(entry *yang.Entry) ([]ListInfo, error) {
 	return infos, nil
 }
 
+// getPath returns the absolute gNMI path of the given YANG entry.
+// It skips choice and case nodes to produce a path compatible with gNMI.
 func getPath(entry *yang.Entry) string {
 	parts := []string{}
 	// Stop when Parent is nil (usually the module)
