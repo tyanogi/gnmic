@@ -41,7 +41,7 @@ func Walk(entry *yang.Entry) ([]ListInfo, error) {
 		}
 
 		if e.ListAttr != nil {
-			p := getPath(e)
+			p := GetPath(e)
 			if e.Key != "" {
 				keys := strings.Fields(e.Key)
 				// Handle multiple keys by creating a ListInfo for each key
@@ -76,9 +76,9 @@ func Walk(entry *yang.Entry) ([]ListInfo, error) {
 	return infos, nil
 }
 
-// getPath returns the absolute gNMI path of the given YANG entry.
+// GetPath returns the absolute gNMI path of the given YANG entry.
 // It skips choice and case nodes to produce a path compatible with gNMI.
-func getPath(entry *yang.Entry) string {
+func GetPath(entry *yang.Entry) string {
 	parts := []string{}
 	// Stop when Parent is nil (usually the module)
 	for e := entry; e != nil && e.Parent != nil; e = e.Parent {

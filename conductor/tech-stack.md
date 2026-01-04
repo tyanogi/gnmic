@@ -3,6 +3,7 @@
 ## Core Technologies
 - **Programming Language**: Go (v1.24.7)
 - **Primary Protocols**: gRPC, gNMI (gRPC Network Management Interface)
+- **YANG Parsing**: github.com/openconfig/goyang
 
 ## Backend & Integration
 - **Message Brokers**: Kafka (via IBM/sarama), NATS (including Jetstream)

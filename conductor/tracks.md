@@ -4,5 +4,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-## [~] Track: Implement YANG Schema Walker (Track 1)
-*Link: [./conductor/tracks/yang_schema_walker_20260104/](./conductor/tracks/yang_schema_walker_20260104/)*
+## [x] Track: Implement Suggestion Engine & Cache (Track 2)
+*Link: [./conductor/tracks/suggestion_engine_20260104/](./conductor/tracks/suggestion_engine_20260104/)*

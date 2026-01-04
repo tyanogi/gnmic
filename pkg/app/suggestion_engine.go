@@ -96,7 +96,9 @@ func (s *suggestionEngineImpl) prefetchList(ctx context.Context, list ListInfo) 
 	}
 
 	if len(candidates) > 0 {
-		s.cache.Add(list.Path, candidates)
+		// Use a composite key to distinguish between multiple keys of the same list
+		cacheKey := fmt.Sprintf("%s::%s", list.Path, list.Key)
+		s.cache.Add(cacheKey, candidates)
 	}
 
 	return nil

@@ -107,7 +107,8 @@ func TestSuggestionEngine_PrefetchList(t *testing.T) {
 	}
 
 	// Verify cache
-	got := mockCache.Get("/interfaces/interface")
+	// Cache key should be "Path::Key"
+	got := mockCache.Get("/interfaces/interface::name")
 	if len(got) != 2 {
 		t.Errorf("Expected 2 candidates in cache, got %d", len(got))
 	}
@@ -137,8 +138,8 @@ func TestSuggestionEngine_Start(t *testing.T) {
 	engine := NewSuggestionEngine(target, mockCache)
 
 	lists := []ListInfo{
-		{Path: "/p1", StatePath: "/p1/state"},
-		{Path: "/p2", StatePath: "/p2/state"},
+		{Path: "/p1", Key: "k1", StatePath: "/p1/state"},
+		{Path: "/p2", Key: "k2", StatePath: "/p2/state"},
 	}
 
 	// Execute (Red Phase: Start does nothing)
@@ -150,10 +151,10 @@ func TestSuggestionEngine_Start(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 
 	// Verify
-	if len(mockCache.Get("/p1")) == 0 {
+	if len(mockCache.Get("/p1::k1")) == 0 {
 		t.Error("Expected suggestions for /p1, got none")
 	}
-	if len(mockCache.Get("/p2")) == 0 {
+	if len(mockCache.Get("/p2::k2")) == 0 {
 		t.Error("Expected suggestions for /p2, got none")
 	}
 }
