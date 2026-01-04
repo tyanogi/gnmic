@@ -352,7 +352,7 @@ func debugLog(format string, a ...interface{}) {
 }
 
 func findMatchedXPATH(entry *yang.Entry, input string, prefixPresent bool) []goprompt.Suggest {
-	// debugLog("findMatchedXPATH entry=%s input=%s", entry.Name, input)
+	debugLog("findMatchedXPATH entry=%s input=%s", entry.Name, input)
 	if strings.HasPrefix(input, ":") {
 		return nil
 	}
@@ -452,13 +452,13 @@ func findMatchedXPATH(entry *yang.Entry, input string, prefixPresent bool) []gop
 				if child.Key != "" { // list
 					keylist := strings.Split(child.Key, " ")
 					path := app.GetPath(child)
-					// debugLog("Inside brackets: path=%s keylist=%v cacheKey=%s", path, keylist, fmt.Sprintf("%s::%s", path, keylist[0]))
+					debugLog("Inside brackets: path=%s keylist=%v cacheKey=%s", path, keylist, fmt.Sprintf("%s::%s", path, keylist[0]))
 					// Only expand suggestions for single-key lists
 					if len(keylist) == 1 {
 						key := keylist[0]
 						cacheKey := fmt.Sprintf("%s::%s", path, key)
 						cachedValues := gApp.SuggestionCache.Get(cacheKey)
-						// debugLog("Cache hit: %v", cachedValues)
+						debugLog("Cache hit: %v", cachedValues)
 
 						if len(cachedValues) > 0 {
 							for _, val := range cachedValues {
