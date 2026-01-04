@@ -14,6 +14,7 @@ import (
 
 	"github.com/openconfig/gnmi/proto/gnmi"
 	"github.com/openconfig/gnmic/pkg/api/target"
+	"github.com/openconfig/gnmic/pkg/api/types"
 	"google.golang.org/grpc"
 )
 
@@ -82,7 +83,10 @@ func TestSuggestionEngine_PrefetchList(t *testing.T) {
 	mockCache := &mockSuggestionCache{data: make(map[string][]string)}
 	
 	// Create engine with mock target (we need to inject the mock client)
-	target := &target.Target{Client: mockClient}
+	target := &target.Target{
+		Client: mockClient,
+		Config: &types.TargetConfig{},
+	}
 	engine := &suggestionEngineImpl{
 		target: target,
 		cache:  mockCache,
