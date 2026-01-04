@@ -92,7 +92,7 @@ func TestWalk_SimpleList(t *testing.T) {
 	// Actually, if I use goyang's Path(), it includes the module.
 	// I'll check my implementation requirement: "リストの絶対パス (例: /interfaces/interface)"
 	// This implies gNMI path.
-	
+
 	// For the Red phase, I will assert the gNMI path.
 	if r.Path != "/interfaces/interface" {
 		t.Errorf("Expected path /interfaces/interface, got %s", r.Path)

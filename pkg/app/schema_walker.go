@@ -60,8 +60,8 @@ func Walk(entry *yang.Entry) ([]ListInfo, error) {
 					infos = append(infos, li)
 				}
 			} else {
-                fmt.Printf("List %s has no key\n", e.Name)
-            }
+				fmt.Printf("List %s has no key\n", e.Name)
+			}
 		}
 
 		for _, child := range e.Dir {
