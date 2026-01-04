@@ -199,3 +199,105 @@ func TestWalk_OpenConfigHeuristic(t *testing.T) {
 		t.Errorf("Expected StatePath /interface/state/name, got %s", r.StatePath)
 	}
 }
+
+func TestWalk_ComplexNested(t *testing.T) {
+	// Build schema:
+	// /network-instances
+	//   /network-instance [key=name]
+	//     /protocols
+	//       /protocol [key="identifier name"]
+	//         /bgp
+	//           /neighbors
+	//             /neighbor [key=neighbor-address]
+	//               /state
+	//                 /neighbor-address
+
+	neighborAddressLeaf := &yang.Entry{Name: "neighbor-address", Kind: yang.LeafEntry}
+	neighborStateAddressLeaf := &yang.Entry{Name: "neighbor-address", Kind: yang.LeafEntry}
+	neighborState := &yang.Entry{
+		Name: "state",
+		Kind: yang.DirectoryEntry,
+		Dir:  map[string]*yang.Entry{"neighbor-address": neighborStateAddressLeaf},
+	}
+	neighborStateAddressLeaf.Parent = neighborState
+
+	listNeighbor := &yang.Entry{
+		Name:     "neighbor",
+		Kind:     yang.DirectoryEntry,
+		ListAttr: &yang.ListAttr{},
+		Key:      "neighbor-address",
+		Dir:      map[string]*yang.Entry{"neighbor-address": neighborAddressLeaf, "state": neighborState},
+	}
+	neighborAddressLeaf.Parent = listNeighbor
+	neighborState.Parent = listNeighbor
+
+	containerNeighbors := createMockEntry("neighbors", listNeighbor)
+	containerBgp := createMockEntry("bgp", containerNeighbors)
+
+	protocolIdLeaf := &yang.Entry{Name: "identifier", Kind: yang.LeafEntry}
+	protocolNameLeaf := &yang.Entry{Name: "name", Kind: yang.LeafEntry}
+	listProtocol := &yang.Entry{
+		Name:     "protocol",
+		Kind:     yang.DirectoryEntry,
+		ListAttr: &yang.ListAttr{},
+		Key:      "identifier name",
+		Dir:      map[string]*yang.Entry{"identifier": protocolIdLeaf, "name": protocolNameLeaf, "bgp": containerBgp},
+	}
+	protocolIdLeaf.Parent = listProtocol
+	protocolNameLeaf.Parent = listProtocol
+	containerBgp.Parent = listProtocol
+
+	containerProtocols := createMockEntry("protocols", listProtocol)
+
+	niNameLeaf := &yang.Entry{Name: "name", Kind: yang.LeafEntry}
+	listNi := &yang.Entry{
+		Name:     "network-instance",
+		Kind:     yang.DirectoryEntry,
+		ListAttr: &yang.ListAttr{},
+		Key:      "name",
+		Dir:      map[string]*yang.Entry{"name": niNameLeaf, "protocols": containerProtocols},
+	}
+	niNameLeaf.Parent = listNi
+	containerProtocols.Parent = listNi
+
+	containerNi := createMockEntry("network-instances", listNi)
+	module := createMockEntry("oc-ni", containerNi)
+	module.Kind = yang.DirectoryEntry
+
+	results, err := Walk(module)
+	if err != nil {
+		t.Fatalf("Walk failed: %v", err)
+	}
+
+	// Expected results:
+	// 1. network-instance (key: name)
+	// 2. protocol (key: identifier)
+	// 3. protocol (key: name)
+	// 4. neighbor (key: neighbor-address)
+	if len(results) != 4 {
+		t.Fatalf("Expected 4 results, got %d", len(results))
+	}
+
+	expected := []struct {
+		path      string
+		key       string
+		statePath string
+	}{
+		{"/network-instances/network-instance", "name", "/network-instances/network-instance/name"},
+		{"/network-instances/network-instance/protocols/protocol", "identifier", "/network-instances/network-instance/protocols/protocol/identifier"},
+		{"/network-instances/network-instance/protocols/protocol", "name", "/network-instances/network-instance/protocols/protocol/name"},
+		{"/network-instances/network-instance/protocols/protocol/bgp/neighbors/neighbor", "neighbor-address", "/network-instances/network-instance/protocols/protocol/bgp/neighbors/neighbor/state/neighbor-address"},
+	}
+
+	for i, exp := range expected {
+		if results[i].Path != exp.path {
+			t.Errorf("[%d] Expected path %s, got %s", i, exp.path, results[i].Path)
+		}
+		if results[i].Key != exp.key {
+			t.Errorf("[%d] Expected key %s, got %s", i, exp.key, results[i].Key)
+		}
+		if results[i].StatePath != exp.statePath {
+			t.Errorf("[%d] Expected statePath %s, got %s", i, exp.statePath, results[i].StatePath)
+		}
+	}
+}
