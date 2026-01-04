@@ -94,10 +94,13 @@ type App struct {
 	PromptMode          bool
 	PromptVariableStore *VariableStore
 	PromptHistory       []string
-	SchemaTree    *yang.Entry
+	SchemaTree          *yang.Entry
 	// yang
 	modules *yang.Modules
 	//
+	SuggestionEngine SuggestionEngine
+	SuggestionCache  SuggestionCache
+
 	wg        *sync.WaitGroup
 	printLock *sync.Mutex
 	errCh     chan error
@@ -145,6 +148,7 @@ func New() *App {
 		out:                 os.Stdout,
 		PromptVariableStore: NewVariableStore(),
 		PromptHistory:       make([]string, 0, 128),
+		SuggestionCache:     NewSuggestionCache(),
 		SchemaTree: &yang.Entry{
 			Dir: make(map[string]*yang.Entry),
 		},
@@ -568,4 +572,39 @@ func (a *App) CreateGNMIClient(ctx context.Context, t *target.Target) error {
 		return fmt.Errorf("failed to create a gRPC client for target %q : %w", t.Config.Name, err)
 	}
 	return nil
+}
+
+func (a *App) startSuggestionEngine(ctx context.Context) {
+	if a.SchemaTree == nil {
+		return
+	}
+	// Extract list info using SchemaWalker
+	lists, err := Walk(a.SchemaTree)
+	if err != nil {
+		a.Logger.Printf("failed to walk schema for suggestions: %v", err)
+		return
+	}
+
+	// Pick a target to fetch suggestions from. 
+	// For simplicity, we pick the first active target.
+	var t *target.Target
+	a.operLock.RLock()
+	for _, target := range a.Targets {
+		t = target
+		break
+	}
+	a.operLock.RUnlock()
+
+	if t == nil {
+		if a.Config.Debug {
+			a.Logger.Printf("no targets available for suggestion engine")
+		}
+		return
+	}
+
+	a.SuggestionEngine = NewSuggestionEngine(t, a.SuggestionCache)
+	a.SuggestionEngine.Start(ctx, lists)
+	if a.Config.Debug {
+		a.Logger.Printf("started suggestion engine with %d lists", len(lists))
+	}
 }

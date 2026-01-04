@@ -29,6 +29,7 @@ func (a *App) PromptRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 	a.PromptMode = true
+	a.startSuggestionEngine(a.ctx)
 	// load history
 	a.PromptHistory = make([]string, 0, 256)
 	home, err := homedir.Dir()
