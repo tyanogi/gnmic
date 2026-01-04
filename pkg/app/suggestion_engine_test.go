@@ -82,7 +82,7 @@ func TestSuggestionEngine_PrefetchList(t *testing.T) {
 		},
 	}
 	mockCache := &mockSuggestionCache{data: make(map[string][]string)}
-	
+
 	// Create engine with mock target (we need to inject the mock client)
 	target := &target.Target{
 		Client: mockClient,
