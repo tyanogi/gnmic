@@ -7,11 +7,12 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1: キャッシュ機構の実装' (Protocol in workflow.md) 7d5cb9a
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: キャッシュ機構の実装' (Protocol in workflow.md)
 
-## Phase 2: 事前取得エンジン (Suggestion Engine) のコアロジック実装
-- [ ] 型定義: `pkg/app/suggestion_engine.go` に `SuggestionEngine` 構造体とインターフェースを定義する
-- [ ] モック作成: ユニットテスト用に `gNMI Client` と `SuggestionCache` のモックを作成する
-- [ ] TDD: gNMI Get レスポンスから値を抽出し、キャッシュに保存するロジックのテストを作成する
-- [ ] 実装: `gNMI Get` を実行し、結果を解析してキャッシュに保存する同期的なロジックを実装する
+## Phase 2: 事前取得エンジン (Suggestion Engine) のコアロジック実装 [checkpoint: dadd375]
+- [x] 型定義: `pkg/app/suggestion_engine.go` に `SuggestionEngine` 構造体とインターフェースを定義する 4f5dfe8
+- [x] モック作成: ユニットテスト用に `gNMI Client` と `SuggestionCache` のモックを作成する 3aa5f7d
+- [x] TDD: gNMI Get レスポンスから値を抽出し、キャッシュに保存するロジックのテストを作成する d8653a6
+- [x] 実装: `gNMI Get` を実行し、結果を解析してキャッシュに保存する同期的なロジックを実装する 2a2857b
+- [x] Task: Conductor - User Manual Verification 'Phase 2: 事前取得エンジン (Suggestion Engine) のコアロジック実装' (Protocol in workflow.md) dadd375
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: 事前取得エンジン (Suggestion Engine) のコアロジック実装' (Protocol in workflow.md)
 
 ## Phase 3: 非同期実行と統合
