@@ -574,7 +574,7 @@ func (a *App) CreateGNMIClient(ctx context.Context, t *target.Target) error {
 	return nil
 }
 
-func (a *App) startSuggestionEngine(ctx context.Context) {
+func (a *App) StartSuggestionEngine(ctx context.Context) {
 	if a.SchemaTree == nil {
 		return
 	}

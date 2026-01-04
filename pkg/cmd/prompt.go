@@ -874,6 +874,9 @@ func ExecutePrompt() {
 		go app.StartOpenConfigPrefetch(gApp.Context(), t, gApp.PromptVariableStore, gApp.Logger)
 	}
 
+	// Start Suggestion Engine (Track 2)
+	gApp.StartSuggestionEngine(gApp.Context())
+
 	shell := &cmdPrompt{
 		RootCmd: gApp.RootCmd,
 		GoPromptOptions: []goprompt.Option{
