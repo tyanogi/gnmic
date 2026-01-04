@@ -146,3 +146,56 @@ func TestWalk_CompositeKey(t *testing.T) {
 		t.Errorf("Expected StatePath /acl/acl-entry/name, got %s", r2.StatePath)
 	}
 }
+
+func TestWalk_OpenConfigHeuristic(t *testing.T) {
+	// Build schema:
+	// list interface [key=name]
+	//   leaf name
+	//   container state
+	//     leaf name
+
+	leafName := &yang.Entry{
+		Name: "name",
+		Kind: yang.LeafEntry,
+		Type: &yang.YangType{Kind: yang.Ystring},
+	}
+	leafStateName := &yang.Entry{
+		Name: "name",
+		Kind: yang.LeafEntry,
+		Type: &yang.YangType{Kind: yang.Ystring},
+	}
+	containerState := &yang.Entry{
+		Name: "state",
+		Kind: yang.DirectoryEntry,
+		Dir:  map[string]*yang.Entry{"name": leafStateName},
+	}
+	leafStateName.Parent = containerState
+
+	listInterface := &yang.Entry{
+		Name:     "interface",
+		Kind:     yang.DirectoryEntry,
+		ListAttr: &yang.ListAttr{},
+		Dir:      map[string]*yang.Entry{"name": leafName, "state": containerState},
+		Key:      "name",
+	}
+	leafName.Parent = listInterface
+	containerState.Parent = listInterface
+
+	module := createMockEntry("oc-interfaces", listInterface)
+	module.Kind = yang.DirectoryEntry
+
+	results, err := Walk(module)
+	if err != nil {
+		t.Fatalf("Walk failed: %v", err)
+	}
+
+	if len(results) != 1 {
+		t.Fatalf("Expected 1 result, got %d", len(results))
+	}
+
+	r := results[0]
+	// Heuristic should find /interface/state/name
+	if r.StatePath != "/interface/state/name" {
+		t.Errorf("Expected StatePath /interface/state/name, got %s", r.StatePath)
+	}
+}
