@@ -1,7 +1,7 @@
 # Implementation Plan - Implement YANG Schema Walker (Track 1)
 
 ## Phase 1: 環境構築と型定義
-- [~] 型定義の作成: `pkg/app/schema_walker.go` に `ListInfo` 構造体とインターフェースを定義する
+- [x] 型定義の作成: `pkg/app/schema_walker.go` に `ListInfo` 構造体とインターフェースを定義する 2e027cc
 - [ ] テスト用ボイラープレートの作成: `pkg/app/schema_walker_test.go` を作成し、goyangを使ったモック用YANGエントリ生成の補助関数を用意する
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: 環境構築と型定義' (Protocol in workflow.md)
 
