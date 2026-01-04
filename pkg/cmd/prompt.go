@@ -342,7 +342,17 @@ func subscriptionTable(scs map[string]*types.SubscriptionConfig, list bool) [][]
 
 var name string
 
+func debugLog(format string, a ...interface{}) {
+	f, err := os.OpenFile("/tmp/gnmic_prompt_debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	fmt.Fprintf(f, format+"\n", a...)
+}
+
 func findMatchedXPATH(entry *yang.Entry, input string, prefixPresent bool) []goprompt.Suggest {
+	// debugLog("findMatchedXPATH entry=%s input=%s", entry.Name, input)
 	if strings.HasPrefix(input, ":") {
 		return nil
 	}
@@ -442,11 +452,13 @@ func findMatchedXPATH(entry *yang.Entry, input string, prefixPresent bool) []gop
 				if child.Key != "" { // list
 					keylist := strings.Split(child.Key, " ")
 					path := app.GetPath(child)
+					// debugLog("Inside brackets: path=%s keylist=%v cacheKey=%s", path, keylist, fmt.Sprintf("%s::%s", path, keylist[0]))
 					// Only expand suggestions for single-key lists
 					if len(keylist) == 1 {
 						key := keylist[0]
 						cacheKey := fmt.Sprintf("%s::%s", path, key)
 						cachedValues := gApp.SuggestionCache.Get(cacheKey)
+						// debugLog("Cache hit: %v", cachedValues)
 
 						if len(cachedValues) > 0 {
 							for _, val := range cachedValues {
