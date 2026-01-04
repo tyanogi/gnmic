@@ -1,6 +1,6 @@
 // © 2022 Nokia.
 //
-// This code is a Contribution to the gNMIc project (“Work”) made under the Google Software Grant and Corporate Contributor License Agreement (“CLA”) if and governed by the Apache License 2.0.
+// This code is a Contribution to the gNMIc project (“Work”) made under the Google Software Grant and Corporate Contributor License Agreement (“CLA”) and governed by the Apache License 2.0.
 // No other rights or licenses in or to any of Nokia’s intellectual property are granted for any other purpose.
 // This code is provided on an “as is” basis without any warranties of any kind.
 //
@@ -19,18 +19,21 @@ import (
 
 // SuggestionEngine defines the interface for prefetching suggestion values
 // from targets and managing them in a cache.
+// It uses gNMI Get requests to fetch candidate values for YANG list keys.
 type SuggestionEngine interface {
 	// Start begins the asynchronous prefetching process for the given lists.
+	// Each list is processed in a separate goroutine.
 	Start(ctx context.Context, lists []ListInfo)
 }
 
 // suggestionEngineImpl is the implementation of SuggestionEngine.
+// It holds a reference to a gNMI target and a suggestion cache.
 type suggestionEngineImpl struct {
 	target *target.Target
 	cache  SuggestionCache
 }
 
-// NewSuggestionEngine creates a new instance of SuggestionEngine.
+// NewSuggestionEngine creates a new instance of SuggestionEngine with the provided target and cache.
 func NewSuggestionEngine(t *target.Target, c SuggestionCache) SuggestionEngine {
 	return &suggestionEngineImpl{
 		target: t,
@@ -39,12 +42,15 @@ func NewSuggestionEngine(t *target.Target, c SuggestionCache) SuggestionEngine {
 }
 
 // Start begins the asynchronous prefetching process for the given lists.
+// It iterates over the provided ListInfo slice and spawns a goroutine for each list
+// to perform the gNMI Get request without blocking the main thread.
 func (s *suggestionEngineImpl) Start(ctx context.Context, lists []ListInfo) {
 	for _, list := range lists {
 		go func(li ListInfo) {
 			err := s.prefetchList(ctx, li)
 			if err != nil {
-				// We log errors but don't stop the engine as per requirements
+				// We log errors but don't stop the engine as per requirements.
+				// In a production environment, this might use a proper logger.
 				fmt.Printf("Suggestion engine error for path %s: %v\n", li.Path, err)
 			}
 		}(list)
@@ -52,6 +58,8 @@ func (s *suggestionEngineImpl) Start(ctx context.Context, lists []ListInfo) {
 }
 
 // prefetchList sends a gNMI Get request for a single list and updates the cache.
+// It parses the StatePath, executes the Get request, extracts the values from the response,
+// and stores them in the cache using a composite key (SchemaPath::KeyName).
 func (s *suggestionEngineImpl) prefetchList(ctx context.Context, list ListInfo) error {
 	gnmiPath, err := gnmicpath.ParsePath(list.StatePath)
 	if err != nil {
