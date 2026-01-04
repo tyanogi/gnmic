@@ -43,10 +43,19 @@ func Walk(entry *yang.Entry) ([]ListInfo, error) {
 				keys := strings.Fields(e.Key)
 				// Handle multiple keys by creating a ListInfo for each key
 				for _, k := range keys {
+					statePath := p + "/" + k
+					// OpenConfig heuristic: check if there's a 'state' container
+					// and if it contains a leaf with the same name as the key.
+					if state, ok := e.Dir["state"]; ok && state.Kind == yang.DirectoryEntry {
+						if _, ok := state.Dir[k]; ok {
+							statePath = p + "/state/" + k
+						}
+					}
+
 					li := ListInfo{
 						Path:      p,
 						Key:       k,
-						StatePath: p + "/" + k,
+						StatePath: statePath,
 					}
 					infos = append(infos, li)
 				}
