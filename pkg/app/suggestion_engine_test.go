@@ -11,6 +11,7 @@ package app
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/openconfig/gnmi/proto/gnmi"
 	"github.com/openconfig/gnmic/pkg/api/target"
@@ -115,5 +116,44 @@ func TestSuggestionEngine_PrefetchList(t *testing.T) {
 		if !expected[v] {
 			t.Errorf("Unexpected candidate in cache: %s", v)
 		}
+	}
+}
+
+func TestSuggestionEngine_Start(t *testing.T) {
+	// Setup mock cache and client
+	mockCache := &mockSuggestionCache{data: make(map[string][]string)}
+	mockClient := &mockGNMIClient{
+		getResponse: &gnmi.GetResponse{
+			Notification: []*gnmi.Notification{
+				{
+					Update: []*gnmi.Update{
+						{Val: &gnmi.TypedValue{Value: &gnmi.TypedValue_StringVal{StringVal: "val"}}},
+					},
+				},
+			},
+		},
+	}
+	target := &target.Target{Client: mockClient, Config: &types.TargetConfig{}}
+	engine := NewSuggestionEngine(target, mockCache)
+
+	lists := []ListInfo{
+		{Path: "/p1", StatePath: "/p1/state"},
+		{Path: "/p2", StatePath: "/p2/state"},
+	}
+
+	// Execute (Red Phase: Start does nothing)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	engine.Start(ctx, lists)
+
+	// Wait for async execution (simple sleep for test)
+	time.Sleep(100 * time.Millisecond)
+
+	// Verify
+	if len(mockCache.Get("/p1")) == 0 {
+		t.Error("Expected suggestions for /p1, got none")
+	}
+	if len(mockCache.Get("/p2")) == 0 {
+		t.Error("Expected suggestions for /p2, got none")
 	}
 }
