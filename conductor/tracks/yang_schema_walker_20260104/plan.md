@@ -5,12 +5,12 @@
 - [x] テスト用ボイラープレートの作成: `pkg/app/schema_walker_test.go` を作成し、goyangを使ったモック用YANGエントリ生成の補助関数を用意する 3efad23
 - [x] Task: Conductor - User Manual Verification 'Phase 1: 環境構築と型定義' (Protocol in workflow.md) [checkpoint: e634079]
 
-## Phase 2: Schema Walker の核となるロジックの実装
+## Phase 2: Schema Walker の核となるロジックの実装 [checkpoint: 26af52f]
 - [x] TDD: 単純なリスト（シングルキー）から情報を抽出するテストを書く 820f433
 - [x] 実装: `yang.Entry` を再帰的に探索し、リストノードを特定する基本ロジックを実装する 820f433
 - [x] TDD: 複合キーを持つリストから複数の `ListInfo` に展開するテストを書く 820f433
 - [x] 実装: 複合キーの各要素を個別の `ListInfo` に展開するロジックを実装する 820f433
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Schema Walker の核となるロジックの実装' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Schema Walker の核となるロジックの実装' (Protocol in workflow.md) 26af52f
 
 ## Phase 3: OpenConfig State Path 優先ロジックの追加
 - [ ] TDD: OpenConfigスタイルの `state` コンテナを持つリストのテストケースを追加する
