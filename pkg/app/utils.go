@@ -13,7 +13,26 @@ import (
 	"strings"
 
 	"github.com/openconfig/gnmi/proto/gnmi"
+	"github.com/openconfig/goyang/pkg/yang"
 )
+
+// GetPath returns the absolute gNMI path of the given YANG entry.
+// It skips choice and case nodes to produce a path compatible with gNMI.
+func GetPath(entry *yang.Entry) string {
+	parts := []string{}
+	// Stop when Parent is nil (usually the module)
+	for e := entry; e != nil && e.Parent != nil; e = e.Parent {
+		if e.IsChoice() || e.IsCase() {
+			continue
+		}
+		parts = append(parts, e.Name)
+	}
+	// Reverse
+	for i, j := 0, len(parts)-1; i < j; i, j = i+1, j-1 {
+		parts[i], parts[j] = parts[j], parts[i]
+	}
+	return "/" + strings.Join(parts, "/")
+}
 
 func (a *App) printCapResponse(printPrefix string, msg *gnmi.CapabilityResponse) {
 	sb := strings.Builder{}
