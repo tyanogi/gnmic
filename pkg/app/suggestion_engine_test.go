@@ -120,6 +120,65 @@ func TestSuggestionEngine_PrefetchList(t *testing.T) {
 	}
 }
 
+func TestSuggestionEngine_PrefetchList_UintKey(t *testing.T) {
+	// Setup mock with UintVal (typical for subinterface index)
+	mockClient := &mockGNMIClient{
+		getResponse: &gnmi.GetResponse{
+			Notification: []*gnmi.Notification{
+				{
+					Update: []*gnmi.Update{
+						{
+							Val: &gnmi.TypedValue{
+								Value: &gnmi.TypedValue_UintVal{UintVal: 0},
+							},
+						},
+						{
+							Val: &gnmi.TypedValue{
+								Value: &gnmi.TypedValue_UintVal{UintVal: 100},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	mockCache := &mockSuggestionCache{data: make(map[string][]string)}
+
+	target := &target.Target{
+		Client: mockClient,
+		Config: &types.TargetConfig{},
+	}
+	engine := &suggestionEngineImpl{
+		target: target,
+		cache:  mockCache,
+	}
+
+	list := ListInfo{
+		Path:      "/interfaces/interface/subinterfaces/subinterface",
+		Key:       "index",
+		StatePath: "/interfaces/interface/subinterfaces/subinterface/state/index",
+	}
+
+	// Execute
+	ctx := context.Background()
+	err := engine.prefetchList(ctx, list)
+	if err != nil {
+		t.Fatalf("prefetchList failed: %v", err)
+	}
+
+	// Verify cache
+	got := mockCache.Get("/interfaces/interface/subinterfaces/subinterface::index")
+	if len(got) != 2 {
+		t.Errorf("Expected 2 candidates in cache, got %d. Cache: %v", len(got), got)
+	}
+	expected := map[string]bool{"0": true, "100": true}
+	for _, v := range got {
+		if !expected[v] {
+			t.Errorf("Unexpected candidate in cache: %s", v)
+		}
+	}
+}
+
 func TestSuggestionEngine_Start(t *testing.T) {
 	// Setup mock cache and client
 	mockCache := &mockSuggestionCache{data: make(map[string][]string)}

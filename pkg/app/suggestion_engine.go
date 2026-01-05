@@ -11,6 +11,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/openconfig/gnmi/proto/gnmi"
 	gnmicpath "github.com/openconfig/gnmic/pkg/api/path"
@@ -85,16 +86,7 @@ func (s *suggestionEngineImpl) prefetchList(ctx context.Context, list ListInfo) 
 				continue
 			}
 			// Extract value as string
-			var sVal string
-			switch v := val.Value.(type) {
-			case *gnmi.TypedValue_StringVal:
-				sVal = v.StringVal
-			case *gnmi.TypedValue_AsciiVal:
-				sVal = v.AsciiVal
-			default:
-				// Fallback to string representation if possible, or skip
-				sVal = fmt.Sprintf("%v", val)
-			}
+			sVal := typedValueToString(val)
 
 			if sVal != "" && !seen[sVal] {
 				candidates = append(candidates, sVal)
@@ -110,4 +102,37 @@ func (s *suggestionEngineImpl) prefetchList(ctx context.Context, list ListInfo) 
 	}
 
 	return nil
+}
+
+func typedValueToString(tv *gnmi.TypedValue) string {
+	if tv == nil {
+		return ""
+	}
+	switch v := tv.Value.(type) {
+	case *gnmi.TypedValue_StringVal:
+		return v.StringVal
+	case *gnmi.TypedValue_AsciiVal:
+		return v.AsciiVal
+	case *gnmi.TypedValue_IntVal:
+		return fmt.Sprintf("%d", v.IntVal)
+	case *gnmi.TypedValue_UintVal:
+		return fmt.Sprintf("%d", v.UintVal)
+	case *gnmi.TypedValue_BoolVal:
+		return fmt.Sprintf("%t", v.BoolVal)
+	case *gnmi.TypedValue_BytesVal:
+		return string(v.BytesVal)
+	case *gnmi.TypedValue_FloatVal:
+		return fmt.Sprintf("%f", v.FloatVal)
+	case *gnmi.TypedValue_DecimalVal:
+		return fmt.Sprintf("%d.%d", v.DecimalVal.Digits, v.DecimalVal.Precision)
+	case *gnmi.TypedValue_LeaflistVal:
+		// keys shouldn't be leaflists, but for completeness
+		vals := make([]string, 0, len(v.LeaflistVal.Element))
+		for _, elem := range v.LeaflistVal.Element {
+			vals = append(vals, typedValueToString(elem))
+		}
+		return fmt.Sprintf("[%s]", strings.Join(vals, ", "))
+	default:
+		return fmt.Sprintf("%v", v)
+	}
 }
