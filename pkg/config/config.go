@@ -213,6 +213,7 @@ type LocalFlags struct {
 	PromptDescriptionWithPrefix bool     `mapstructure:"prompt-description-with-prefix,omitempty" json:"prompt-description-with-prefix,omitempty" yaml:"prompt-description-with-prefix,omitempty"`
 	PromptDescriptionWithTypes  bool     `mapstructure:"prompt-description-with-types,omitempty" json:"prompt-description-with-types,omitempty" yaml:"prompt-description-with-types,omitempty"`
 	PromptSuggestWithOrigin     bool     `mapstructure:"prompt-suggest-with-origin,omitempty" json:"prompt-suggest-with-origin,omitempty" yaml:"prompt-suggest-with-origin,omitempty"`
+	PromptSuggestionsFile       string   `mapstructure:"prompt-suggestions-file,omitempty" json:"prompt-suggestions-file,omitempty" yaml:"prompt-suggestions-file,omitempty"`
 	// Listen
 	ListenMaxConcurrentStreams uint32 `mapstructure:"listen-max-concurrent-streams,omitempty" json:"listen-max-concurrent-streams,omitempty" yaml:"listen-max-concurrent-streams,omitempty"`
 	ListenPrometheusAddress    string `mapstructure:"listen-prometheus-address,omitempty" json:"listen-prometheus-address,omitempty" yaml:"listen-prometheus-address,omitempty"`

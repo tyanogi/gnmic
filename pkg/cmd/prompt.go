@@ -342,17 +342,8 @@ func subscriptionTable(scs map[string]*types.SubscriptionConfig, list bool) [][]
 
 var name string
 
-func debugLog(format string, a ...interface{}) {
-	f, err := os.OpenFile("gnmic_prompt_debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return
-	}
-	defer f.Close()
-	fmt.Fprintf(f, format+"\n", a...)
-}
-
 func findMatchedXPATH(entry *yang.Entry, input string, prefixPresent bool) []goprompt.Suggest {
-	debugLog("findMatchedXPATH entry=%s input=%s", entry.Name, input)
+	app.DebugLog("findMatchedXPATH entry=%s input=%s", entry.Name, input)
 	if strings.HasPrefix(input, ":") {
 		return nil
 	}
@@ -390,16 +381,19 @@ func findMatchedXPATH(entry *yang.Entry, input string, prefixPresent bool) []gop
 				if len(keylist) == 1 {
 					key := keylist[0]
 					cacheKey := fmt.Sprintf("%s::%s", path, key)
+					app.DebugLog("Checking cache for key: %s", cacheKey)
 					cachedValues := gApp.SuggestionCache.Get(cacheKey)
 
+					// Always add wildcard suggestion
+					wildcardNode := fmt.Sprintf("%s[%s=*]", node, key)
+					suggestions = append(suggestions, goprompt.Suggest{Text: wildcardNode, Description: buildXPATHDescription(child)})
+
 					if len(cachedValues) > 0 {
+						app.DebugLog("Cache hit! Found %d values for %s", len(cachedValues), cacheKey)
 						for _, val := range cachedValues {
 							nodeVal := fmt.Sprintf("%s[%s=%s]", node, key, val)
 							suggestions = append(suggestions, goprompt.Suggest{Text: nodeVal, Description: buildXPATHDescription(child)})
 						}
-					} else {
-						node = fmt.Sprintf("%s[%s=*]", node, key)
-						suggestions = append(suggestions, goprompt.Suggest{Text: node, Description: buildXPATHDescription(child)})
 					}
 				} else {
 					for _, key := range keylist {
@@ -452,22 +446,24 @@ func findMatchedXPATH(entry *yang.Entry, input string, prefixPresent bool) []gop
 				if child.Key != "" { // list
 					keylist := strings.Split(child.Key, " ")
 					path := app.GetPath(child)
-					debugLog("Inside brackets: path=%s keylist=%v cacheKey=%s", path, keylist, fmt.Sprintf("%s::%s", path, keylist[0]))
+					app.DebugLog("Inside brackets: path=%s keylist=%v cacheKey=%s", path, keylist, fmt.Sprintf("%s::%s", path, keylist[0]))
 					// Only expand suggestions for single-key lists
 					if len(keylist) == 1 {
 						key := keylist[0]
 						cacheKey := fmt.Sprintf("%s::%s", path, key)
+						app.DebugLog("Inside brackets checking cache for key: %s", cacheKey)
 						cachedValues := gApp.SuggestionCache.Get(cacheKey)
-						debugLog("Cache hit: %v", cachedValues)
+						app.DebugLog("Cache hit: %v", cachedValues)
+
+						// Always add wildcard suggestion
+						wildcardNodeVal := fmt.Sprintf("%s[%s=*]", pathelem, key)
+						suggestions = append(suggestions, goprompt.Suggest{Text: wildcardNodeVal, Description: buildXPATHDescription(child)})
 
 						if len(cachedValues) > 0 {
 							for _, val := range cachedValues {
 								nodeVal := fmt.Sprintf("%s[%s=%s]", pathelem, key, val)
 								suggestions = append(suggestions, goprompt.Suggest{Text: nodeVal, Description: buildXPATHDescription(child)})
 							}
-						} else {
-							nodeVal := fmt.Sprintf("%s[%s=*]", pathelem, key)
-							suggestions = append(suggestions, goprompt.Suggest{Text: nodeVal, Description: buildXPATHDescription(child)})
 						}
 					} else {
 						nodeVal := pathelem
@@ -611,11 +607,6 @@ var dirPathCompleter = completer.FilePathCompleter{
 func findDynamicSuggestions(annotation string, doc goprompt.Document) []goprompt.Suggest {
 	switch annotation {
 	case "XPATH":
-		if valueSuggs := checkValueSuggestions(doc.CurrentLineBeforeCursor()); len(valueSuggs) > 0 {
-			word := doc.GetWordBeforeCursor()
-			cleanWord := strings.TrimLeft(word, "'\"")
-			return goprompt.FilterHasPrefix(valueSuggs, cleanWord, true)
-		}
 		line := doc.CurrentLine()
 		word := doc.GetWordBeforeCursor()
 		suggestions := make([]goprompt.Suggest, 0, 16)
@@ -648,13 +639,24 @@ func findDynamicSuggestions(annotation string, doc goprompt.Document) []goprompt
 				suggestions = append(suggestions, findMatchedXPATH(entry, word, false)...)
 			}
 		}
+		// Deduplicate
+		uniqueSuggestions := make([]goprompt.Suggest, 0, len(suggestions))
+		seen := make(map[string]bool)
+		for _, s := range suggestions {
+			if !seen[s.Text] {
+				uniqueSuggestions = append(uniqueSuggestions, s)
+				seen[s.Text] = true
+			}
+		}
+		suggestions = uniqueSuggestions
+
 		sort.Slice(suggestions, func(i, j int) bool {
 			if suggestions[i].Text == suggestions[j].Text {
 				return suggestions[i].Description < suggestions[j].Description
 			}
 			return suggestions[i].Text < suggestions[j].Text
 		})
-		return suggestions
+		return goprompt.FilterHasPrefix(suggestions, word, true)
 	case "PREFIX":
 		word := doc.GetWordBeforeCursor()
 		suggestions := make([]goprompt.Suggest, 0, 16)
@@ -667,7 +669,7 @@ func findDynamicSuggestions(annotation string, doc goprompt.Document) []goprompt
 			}
 			return suggestions[i].Text < suggestions[j].Text
 		})
-		return suggestions
+		return goprompt.FilterHasPrefix(suggestions, word, true)
 	case "FILE":
 		return filePathCompleter.Complete(doc)
 	case "YANG":
@@ -850,6 +852,7 @@ func showCommandArguments(b *goprompt.Buffer) {
 
 // ExecutePrompt load and run gnmic-prompt mode.
 func ExecutePrompt() {
+	app.InitDebugLog()
 	initPromptCmds()
 
 	// Initialize Targets
@@ -871,10 +874,9 @@ func ExecutePrompt() {
 			gApp.Logger.Printf("failed to create client for target %s: %v", t.Config.Name, err)
 			continue
 		}
-		go app.StartOpenConfigPrefetch(gApp.Context(), t, gApp.PromptVariableStore, gApp.Logger)
 	}
 
-	// Start Suggestion Engine (Track 2)
+	// Start Suggestion Engine (Track 2 refactored)
 	gApp.StartSuggestionEngine(gApp.Context())
 
 	shell := &cmdPrompt{

@@ -92,7 +92,6 @@ type App struct {
 	out    io.Writer
 	// prompt mode
 	PromptMode          bool
-	PromptVariableStore *VariableStore
 	PromptHistory       []string
 	SchemaTree          *yang.Entry
 	// yang
@@ -146,7 +145,6 @@ func New() *App {
 
 		Logger:              log.New(io.Discard, "[gnmic] ", log.LstdFlags|log.Lmsgprefix),
 		out:                 os.Stdout,
-		PromptVariableStore: NewVariableStore(),
 		PromptHistory:       make([]string, 0, 128),
 		SuggestionCache:     NewSuggestionCache(),
 		SchemaTree: &yang.Entry{
@@ -575,13 +573,20 @@ func (a *App) CreateGNMIClient(ctx context.Context, t *target.Target) error {
 }
 
 func (a *App) StartSuggestionEngine(ctx context.Context) {
-	if a.SchemaTree == nil {
+	DebugLog("[SuggestionEngine] StartSuggestionEngine called, file=%s", a.Config.LocalFlags.PromptSuggestionsFile)
+	if a.Config.LocalFlags.PromptSuggestionsFile == "" {
 		return
 	}
-	// Extract list info using SchemaWalker
-	lists, err := Walk(a.SchemaTree)
+
+	// Load suggestion config from file
+	sConfig, err := LoadSuggestionConfigFromFile(a.Config.LocalFlags.PromptSuggestionsFile)
 	if err != nil {
-		a.Logger.Printf("failed to walk schema for suggestions: %v", err)
+		DebugLog("[SuggestionEngine] Failed to load suggestion config from %s: %v", a.Config.LocalFlags.PromptSuggestionsFile, err)
+		return
+	}
+
+	DebugLog("[SuggestionEngine] Loaded %d items from config file", len(sConfig.Suggestions))
+	if len(sConfig.Suggestions) == 0 {
 		return
 	}
 
@@ -589,22 +594,21 @@ func (a *App) StartSuggestionEngine(ctx context.Context) {
 	// For simplicity, we pick the first active target.
 	var t *target.Target
 	a.operLock.RLock()
+	targetCount := len(a.Targets)
 	for _, target := range a.Targets {
 		t = target
 		break
 	}
 	a.operLock.RUnlock()
 
+	DebugLog("[SuggestionEngine] Available targets count: %d", targetCount)
+
 	if t == nil {
-		if a.Config.Debug {
-			a.Logger.Printf("no targets available for suggestion engine")
-		}
+		DebugLog("[SuggestionEngine] No targets available for suggestion engine")
 		return
 	}
 
+	DebugLog("[SuggestionEngine] Using target %s for prefetching", t.Config.Name)
 	a.SuggestionEngine = NewSuggestionEngine(t, a.SuggestionCache)
-	a.SuggestionEngine.Start(ctx, lists)
-	if a.Config.Debug {
-		a.Logger.Printf("started suggestion engine with %d lists", len(lists))
-	}
+	a.SuggestionEngine.Start(ctx, sConfig.Suggestions)
 }

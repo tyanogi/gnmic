@@ -10,11 +10,29 @@ package app
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/openconfig/gnmi/proto/gnmi"
 	"github.com/openconfig/goyang/pkg/yang"
 )
+
+func InitDebugLog() {
+	f, err := os.OpenFile("gnmic_prompt_debug.log", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		return
+	}
+	f.Close()
+}
+
+func DebugLog(format string, a ...interface{}) {
+	f, err := os.OpenFile("gnmic_prompt_debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	fmt.Fprintf(f, format+"\n", a...)
+}
 
 // GetPath returns the absolute gNMI path of the given YANG entry.
 // It skips choice and case nodes to produce a path compatible with gNMI.

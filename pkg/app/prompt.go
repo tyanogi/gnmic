@@ -87,6 +87,7 @@ func (a *App) InitPromptFlags(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&a.Config.LocalFlags.PromptDescriptionWithPrefix, "description-with-prefix", false, "show YANG module prefix in XPATH suggestion description")
 	cmd.Flags().BoolVar(&a.Config.LocalFlags.PromptDescriptionWithTypes, "description-with-types", false, "show YANG types in XPATH suggestion description")
 	cmd.Flags().BoolVar(&a.Config.LocalFlags.PromptSuggestWithOrigin, "suggest-with-origin", false, "suggest XPATHs with origin prepended ")
+	cmd.Flags().StringVar(&a.Config.LocalFlags.PromptSuggestionsFile, "suggestions-file", "", "path to the suggestion configuration file")
 	cmd.LocalFlags().VisitAll(func(flag *pflag.Flag) {
 		a.Config.FileConfig.BindPFlag(fmt.Sprintf("%s-%s", cmd.Name(), flag.Name), flag)
 	})

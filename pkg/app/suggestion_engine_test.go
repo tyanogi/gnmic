@@ -93,15 +93,15 @@ func TestSuggestionEngine_PrefetchList(t *testing.T) {
 		cache:  mockCache,
 	}
 
-	list := ListInfo{
+	item := SuggestionItem{
 		Path:      "/interfaces/interface",
 		Key:       "name",
-		StatePath: "/interfaces/interface/state/name",
+		StatePath: "/interfaces/interface[name=*]/state/name",
 	}
 
-	// Execute (Red Phase: prefetchList is not implemented)
+	// Execute
 	ctx := context.Background()
-	err := engine.prefetchList(ctx, list)
+	err := engine.prefetchList(ctx, item)
 	if err != nil {
 		t.Fatalf("prefetchList failed: %v", err)
 	}
@@ -153,15 +153,15 @@ func TestSuggestionEngine_PrefetchList_UintKey(t *testing.T) {
 		cache:  mockCache,
 	}
 
-	list := ListInfo{
+	item := SuggestionItem{
 		Path:      "/interfaces/interface/subinterfaces/subinterface",
 		Key:       "index",
-		StatePath: "/interfaces/interface/subinterfaces/subinterface/state/index",
+		StatePath: "/interfaces/interface/subinterfaces/subinterface[index=*]/state/index",
 	}
 
 	// Execute
 	ctx := context.Background()
-	err := engine.prefetchList(ctx, list)
+	err := engine.prefetchList(ctx, item)
 	if err != nil {
 		t.Fatalf("prefetchList failed: %v", err)
 	}
@@ -196,15 +196,15 @@ func TestSuggestionEngine_Start(t *testing.T) {
 	target := &target.Target{Client: mockClient, Config: &types.TargetConfig{}}
 	engine := NewSuggestionEngine(target, mockCache)
 
-	lists := []ListInfo{
-		{Path: "/p1", Key: "k1", StatePath: "/p1/state"},
-		{Path: "/p2", Key: "k2", StatePath: "/p2/state"},
+	items := []SuggestionItem{
+		{Path: "/p1", Key: "k1", StatePath: "/p1[k1=*]/state/k1"},
+		{Path: "/p2", Key: "k2", StatePath: "/p2[k2=*]/state/k2"},
 	}
 
-	// Execute (Red Phase: Start does nothing)
+	// Execute
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	engine.Start(ctx, lists)
+	engine.Start(ctx, items)
 
 	// Wait for async execution (simple sleep for test)
 	time.Sleep(100 * time.Millisecond)

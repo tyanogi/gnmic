@@ -1,0 +1,7 @@
+suggestions:
+  - path: "/interfaces/interface"
+    key: "name"
+    state-path: "/interfaces/interface[name=*]/state/name"
+  - path: "/interfaces/interface/subinterfaces/subinterface"
+    key: "index"
+    state-path: "/interfaces/interface[name=*]/subinterfaces/subinterface[index=*]/state/index"
